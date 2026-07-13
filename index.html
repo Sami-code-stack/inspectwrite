@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InspectWrite AI — Home Inspection Report Writer</title>
+  <meta name="description" content="AI-powered report language for home inspectors. Describe your finding, get professional report text in seconds. Free 30-day trial.">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Serif+Display&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:       #1B2B44;
+      --navy-mid:   #243654;
+      --amber:      #C8922A;
+      --amber-dk:   #A87520;
+      --cream:      #F7F5F0;
+      --white:      #FFFFFF;
+      --text:       #1A202C;
+      --text-2:     #4A5568;
+      --text-3:     #718096;
+      --border:     #E2DDD5;
+      --border-2:   #C8C1B5;
+      --success:    #276749;
+      --success-bg: #F0FFF4;
+      --warning:    #C05621;
+      --warning-bg: #FFFAF0;
+      --danger:     #C53030;
+      --danger-bg:  #FFF5F5;
+      --accent:     #2B6CB0;
+      --accent-bg:  #EBF8FF;
+      --radius:     8px;
+      --shadow:     0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--cream);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      background: var(--navy);
+      padding: 0 24px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      text-decoration: none;
+    }
+
+    .logo-icon {
+      width: 30px;
+      height: 30px;
+      background: rgba(200,146,42,0.2);
+      border: 1px solid rgba(200,146,42,0.35);
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+    }
+
+    .logo-name {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.15rem;
+      color: #fff;
+      letter-spacing: -0.01em;
+    }
+
+    .logo-name em { color: var(--amber); font-style: normal; }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .badge {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 3px 9px;
+      border-radius: 20px;
+    }
+
+    .badge-beta {
+      background: rgba(200,146,42,0.15);
+      border: 1px solid rgba(200,146,42,0.3);
+      color: var(--amber);
+    }
+
+    .badge-free {
+      background: rgba(39,103,73,0.2);
+      border: 1px solid rgba(39,103,73,0.35);
+      color: #68D391;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      background: var(--navy);
+      text-align: center;
+      padding: 44px 24px 48px;
+      border-bottom: 3px solid var(--amber);
+    }
+
+    .hero h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(1.75rem, 4vw, 2.6rem);
+      color: #fff;
+      line-height: 1.2;
+      margin-bottom: 10px;
+    }
+
+    .hero h1 em { color: var(--amber); font-style: normal; }
+
+    .hero p {
+      color: rgba(255,255,255,0.6);
+      font-size: 1rem;
+      max-width: 480px;
+      margin: 0 auto 20px;
+    }
+
+    .hero-stats {
+      display: flex;
+      justify-content: center;
+      gap: 28px;
+      flex-wrap: wrap;
+    }
+
+    .stat {
+      color: rgba(255,255,255,0.5);
+      font-size: 0.78rem;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .stat span { color: rgba(255,255,255,0.85); font-weight: 600; }
+
+    /* ── MAIN GRID ── */
+    .main {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 24px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    @media (max-width: 720px) {
+      .main { grid-template-columns: 1fr; padding: 16px; }
+    }
+
+    /* ── PANELS ── */
+    .panel {
+      background: var(--white);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .panel-head {
+      background: var(--cream);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .panel-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--amber);
+      flex-shrink: 0;
+    }
+
+    .panel-title {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-3);
+    }
+
+    .panel-body {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* ── FIELD LABEL ── */
+    .fl {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-3);
+      margin-bottom: 6px;
+    }
+
+    /* ── CATEGORY PILLS ── */
+    .pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .pill {
+      padding: 4px 11px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: var(--white);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-2);
+      cursor: pointer;
+      transition: all 0.12s;
+      font-family: 'Inter', sans-serif;
+      line-height: 1.4;
+    }
+
+    .pill:hover { border-color: var(--amber); color: var(--amber); }
+    .pill.active { background: var(--navy); border-color: var(--navy); color: #fff; }
+
+    /* ── SEVERITY ── */
+    .sev-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5px;
+    }
+
+    .sb {
+      padding: 7px 9px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--white);
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-2);
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.12s;
+      white-space: nowrap;
+    }
+
+    .sb:hover { border-color: var(--border-2); color: var(--text); }
+    .sb.am { background: var(--success-bg); border-color: #9AE6B4; color: var(--success); }
+    .sb.bm { background: var(--warning-bg); border-color: #FBD38D; color: var(--warning); }
+    .sb.cm { background: var(--danger-bg);  border-color: #FEB2B2; color: var(--danger); }
+    .sb.dm { background: var(--accent-bg);  border-color: #90CDF4; color: var(--accent); }
+
+    /* ── TEXTAREA ── */
+    textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      color: var(--text);
+      background: var(--cream);
+      resize: vertical;
+      min-height: 110px;
+      line-height: 1.65;
+      transition: border-color 0.12s;
+    }
+
+    textarea:focus { outline: none; border-color: var(--amber); background: var(--white); }
+    textarea::placeholder { color: var(--text-3); }
+
+    /* ── GENERATE BUTTON ── */
+    .btn-gen {
+      width: 100%;
+      background: var(--amber);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      padding: 10px 16px;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.12s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      letter-spacing: 0.01em;
+    }
+
+    .btn-gen:hover:not(:disabled) {
+      background: var(--amber-dk);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(200,146,42,0.3);
+    }
+
+    .btn-gen:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    /* ── OUTPUT ── */
+    .out-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 160px;
+      gap: 6px;
+      color: var(--text-3);
+      font-size: 12px;
+      text-align: center;
+    }
+
+    .out-empty-icon { font-size: 30px; opacity: 0.3; margin-bottom: 4px; }
+
+    .out-text {
+      min-height: 160px;
+      font-family: 'DM Mono', monospace;
+      font-size: 12.5px;
+      line-height: 1.85;
+      color: var(--text);
+      white-space: pre-wrap;
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 2px;
+      height: 1.05em;
+      background: var(--amber);
+      vertical-align: text-bottom;
+      animation: blink 0.75s step-end infinite;
+      margin-left: 1px;
+    }
+
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    .out-actions {
+      display: flex;
+      gap: 6px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+      margin-top: 12px;
+    }
+
+    /* ── SMALL BUTTONS ── */
+    .btn-sm {
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--white);
+      color: var(--text-2);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.12s;
+    }
+
+    .btn-sm:hover { border-color: var(--border-2); color: var(--text); }
+    .btn-sm.ok { background: var(--success-bg); border-color: #9AE6B4; color: var(--success); }
+
+    .btn-add { background: var(--navy); border-color: var(--navy); color: #fff; }
+    .btn-add:hover { background: var(--navy-mid); border-color: var(--navy-mid); color: #fff; }
+
+    /* ── REPORT BUILDER ── */
+    .rep-wrap {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 0 24px 28px;
+    }
+
+    @media (max-width: 720px) { .rep-wrap { padding: 0 16px 24px; } }
+
+    .rep-panel {
+      background: var(--white);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .rep-head {
+      background: var(--navy);
+      padding: 11px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .rep-head-l {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .rep-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1rem;
+      color: #fff;
+    }
+
+    .cnt-badge {
+      background: rgba(200,146,42,0.25);
+      border: 1px solid rgba(200,146,42,0.4);
+      color: var(--amber);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 20px;
+      min-width: 24px;
+      text-align: center;
+    }
+
+    .btn-exp {
+      padding: 5px 13px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      cursor: pointer;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: rgba(255,255,255,0.85);
+      transition: all 0.12s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .btn-exp:hover:not(:disabled) { background: rgba(255,255,255,0.18); color: #fff; }
+    .btn-exp:disabled { opacity: 0.35; cursor: not-allowed; }
+
+    .rep-items { padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+
+    .rep-empty {
+      text-align: center;
+      padding: 24px;
+      color: var(--text-3);
+      font-size: 12.5px;
+    }
+
+    /* ── REPORT ITEM ── */
+    .ri {
+      background: var(--cream);
+      border-radius: var(--radius);
+      padding: 10px 12px 10px 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .ri::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+    }
+
+    .ri.sev-minor::before    { background: var(--success); }
+    .ri.sev-moderate::before { background: var(--warning); }
+    .ri.sev-safety::before   { background: var(--danger); }
+    .ri.sev-info::before     { background: var(--accent); }
+
+    .imeta { display: flex; gap: 5px; margin-bottom: 6px; flex-wrap: wrap; }
+
+    .tag {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 4px;
+      letter-spacing: 0.02em;
+    }
+
+    .tcat   { background: #EDF2F7; color: var(--text-2); }
+    .tsafe  { background: var(--danger-bg);  color: var(--danger); }
+    .tmod   { background: var(--warning-bg); color: var(--warning); }
+    .tmin   { background: var(--success-bg); color: var(--success); }
+    .tinf   { background: var(--accent-bg);  color: var(--accent); }
+
+    .itext {
+      font-family: 'DM Mono', monospace;
+      font-size: 11.5px;
+      line-height: 1.75;
+      color: var(--text);
+      white-space: pre-wrap;
+      padding-right: 20px;
+    }
+
+    .btn-rm {
+      position: absolute;
+      top: 8px; right: 8px;
+      background: none;
+      border: none;
+      color: var(--text-3);
+      cursor: pointer;
+      padding: 3px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      font-size: 14px;
+      line-height: 1;
+      transition: all 0.12s;
+    }
+
+    .btn-rm:hover { background: var(--danger-bg); color: var(--danger); }
+
+    /* ── SPINNER ── */
+    .spinner {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.65s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── TOAST ── */
+    .toast-area { max-width: 1080px; margin: 0 auto; padding: 0 24px 12px; min-height: 38px; display: flex; align-items: center; }
+
+    .toast {
+      background: var(--navy);
+      color: #fff;
+      padding: 7px 14px;
+      border-radius: var(--radius);
+      font-size: 12.5px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+
+    .toast.show { opacity: 1; }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 24px;
+      color: var(--text-3);
+      font-size: 12px;
+      border-top: 1px solid var(--border);
+      margin-top: 8px;
+    }
+
+    footer a { color: var(--text-3); text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <a href="/" class="logo">
+    <div class="logo-icon">🏠</div>
+    <span class="logo-name">Inspect<em>Write</em> AI</span>
+  </a>
+  <div class="header-right">
+    <span class="badge badge-free">Free 30-Day Trial</span>
+    <span class="badge badge-beta">Beta</span>
+  </div>
+</header>
+
+<!-- Hero -->
+<div class="hero">
+  <h1>Write inspection reports<br><em>in seconds, not minutes</em></h1>
+  <p>Describe what you found. Get professional, industry-standard report language instantly.</p>
+  <div class="hero-stats">
+    <div class="stat">⚡ <span>3–5 reports/week</span> — automated</div>
+    <div class="stat">📋 <span>12 inspection systems</span> covered</div>
+    <div class="stat">✅ <span>Industry-standard</span> language</div>
+  </div>
+</div>
+
+<!-- Main app grid -->
+<div class="main">
+
+  <!-- Input panel -->
+  <div class="panel">
+    <div class="panel-head">
+      <div class="panel-dot"></div>
+      <span class="panel-title">Your observation</span>
+    </div>
+    <div class="panel-body">
+
+      <div>
+        <div class="fl">System / category</div>
+        <div class="pills" id="catPills">
+          <button class="pill active" data-v="Roof">Roof</button>
+          <button class="pill" data-v="Foundation">Foundation</button>
+          <button class="pill" data-v="Electrical">Electrical</button>
+          <button class="pill" data-v="Plumbing">Plumbing</button>
+          <button class="pill" data-v="HVAC">HVAC</button>
+          <button class="pill" data-v="Interior">Interior</button>
+          <button class="pill" data-v="Exterior">Exterior</button>
+          <button class="pill" data-v="Attic">Attic</button>
+          <button class="pill" data-v="Crawl Space">Crawl Space</button>
+          <button class="pill" data-v="Garage">Garage</button>
+          <button class="pill" data-v="Insulation">Insulation</button>
+          <button class="pill" data-v="Fireplace">Fireplace</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="fl">Severity</div>
+        <div class="sev-grid" id="sevBtns">
+          <button class="sb am" data-v="Minor Deficiency" data-cls="minor" data-tag="tmin">
+            ✓ Minor deficiency
+          </button>
+          <button class="sb" data-v="Moderate Deficiency" data-cls="moderate" data-tag="tmod">
+            ⚠ Moderate deficiency
+          </button>
+          <button class="sb" data-v="Safety Hazard" data-cls="safety" data-tag="tsafe">
+            ⛔ Safety hazard
+          </button>
+          <button class="sb" data-v="Informational Note" data-cls="info" data-tag="tinf">
+            ℹ Info note
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <div class="fl">What did you observe?</div>
+        <textarea id="obs" placeholder="e.g. Missing shingles on northwest corner of the roof, water staining visible on sheathing below. Appears to be an older repair attempt..." rows="5"></textarea>
+      </div>
+
+      <button class="btn-gen" id="genBtn" onclick="generate()">
+        <span id="btnLabel">Generate report language</span>
+        <span id="btnIcon">→</span>
+      </button>
+
+    </div>
+  </div>
+
+  <!-- Output panel -->
+  <div class="panel">
+    <div class="panel-head">
+      <div class="panel-dot"></div>
+      <span class="panel-title">Professional report language</span>
+    </div>
+    <div class="panel-body">
+
+      <div id="outEmpty" class="out-empty">
+        <div class="out-empty-icon">📋</div>
+        <div>Professional report language appears here</div>
+        <div style="font-size:11px">Select a category, set severity, describe your finding</div>
+      </div>
+
+      <div id="outText" class="out-text" style="display:none"></div>
+
+      <div id="outActions" class="out-actions" style="display:none">
+        <button class="btn-sm" id="copyBtn" onclick="copyOut()">📋 Copy</button>
+        <button class="btn-sm btn-add" onclick="addToReport()">+ Add to report</button>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- Report builder -->
+<div class="rep-wrap">
+  <div class="rep-panel">
+    <div class="rep-head">
+      <div class="rep-head-l">
+        <span class="rep-title">Report Builder</span>
+        <span class="cnt-badge" id="cntBadge">0</span>
+      </div>
+      <button class="btn-exp" id="expBtn" onclick="exportReport()" disabled>
+        📄 Copy full report
+      </button>
+    </div>
+    <div class="rep-items" id="repItems">
+      <div class="rep-empty">Add findings above to build your complete report</div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-area">
+  <div class="toast" id="toast"></div>
+</div>
+
+<footer>
+  <p>InspectWrite AI &mdash; Built for licensed home inspectors &middot; <a href="mailto:support@inspectwriteai.com">support@inspectwriteai.com</a></p>
+</footer>
+
+<script>
+  let cat = 'Roof', sev = 'Minor Deficiency', sevCls = 'minor', sevTag = 'tmin';
+  let out = '', items = [];
+
+  document.getElementById('catPills').addEventListener('click', e => {
+    const p = e.target.closest('.pill');
+    if (!p) return;
+    document.querySelectorAll('#catPills .pill').forEach(x => x.classList.remove('active'));
+    p.classList.add('active');
+    cat = p.dataset.v;
+  });
+
+  document.getElementById('sevBtns').addEventListener('click', e => {
+    const b = e.target.closest('.sb');
+    if (!b) return;
+    document.querySelectorAll('#sevBtns .sb').forEach(x => { x.className = 'sb'; });
+    const cls = b.dataset.cls;
+    b.classList.add(cls === 'minor' ? 'am' : cls === 'moderate' ? 'bm' : cls === 'safety' ? 'cm' : 'dm');
+    sev = b.dataset.v; sevCls = cls; sevTag = b.dataset.tag;
+  });
+
+  async function generate() {
+    const obs = document.getElementById('obs').value.trim();
+    if (!obs) { showToast('Please describe your observation first'); return; }
+
+    const btn = document.getElementById('genBtn');
+    btn.disabled = true;
+    document.getElementById('btnLabel').textContent = 'Generating...';
+    document.getElementById('btnIcon').outerHTML = '<span class="spinner" id="btnIcon"></span>';
+
+    document.getElementById('outEmpty').style.display = 'none';
+    const outEl = document.getElementById('outText');
+    outEl.style.display = 'block';
+    outEl.innerHTML = '<span class="cursor"></span>';
+    document.getElementById('outActions').style.display = 'none';
+    out = '';
+
+    try {
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ observation: obs, category: cat, severity: sev })
+      });
+
+      if (!res.ok) throw new Error('API error');
+
+      const reader = res.body.getReader();
+      const dec = new TextDecoder();
+      let buf = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += dec.decode(value, { stream: true });
+        const lines = buf.split('\n');
+        buf = lines.pop() || '';
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue;
+          const d = line.slice(6).trim();
+          if (d === '[DONE]') continue;
+          try {
+            const p = JSON.parse(d);
+            if (p.type === 'content_block_delta' && p.delta?.type === 'text_delta') {
+              out += p.delta.text;
+              outEl.innerHTML = esc(out) + '<span class="cursor"></span>';
+            }
+          } catch(e) {}
+        }
+      }
+
+      outEl.innerHTML = esc(out);
+      document.getElementById('outActions').style.display = 'flex';
+
+    } catch(err) {
+      outEl.innerHTML = '<span style="color:#C53030">Generation failed — please try again.</span>';
+      console.error(err);
+    }
+
+    btn.disabled = false;
+    document.getElementById('btnLabel').textContent = 'Generate report language';
+    const sp = document.getElementById('btnIcon');
+    if (sp) sp.outerHTML = '<span id="btnIcon">→</span>';
+  }
+
+  function esc(t) {
+    return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+  }
+
+  function copyOut() {
+    if (!out) return;
+    navigator.clipboard.writeText(out).then(() => {
+      const b = document.getElementById('copyBtn');
+      b.classList.add('ok');
+      b.textContent = '✓ Copied!';
+      setTimeout(() => { b.classList.remove('ok'); b.textContent = '📋 Copy'; }, 2000);
+    });
+  }
+
+  function addToReport() {
+    if (!out) return;
+    items.push({ id: Date.now(), cat, sev, sevCls, sevTag, text: out });
+    renderItems();
+    showToast('Added to report');
+  }
+
+  function renderItems() {
+    const el = document.getElementById('repItems');
+    document.getElementById('cntBadge').textContent = items.length;
+    document.getElementById('expBtn').disabled = !items.length;
+
+    if (!items.length) {
+      el.innerHTML = '<div class="rep-empty">Add findings above to build your complete report</div>';
+      return;
+    }
+
+    el.innerHTML = items.map(i => `
+      <div class="ri sev-${i.sevCls}">
+        <div class="imeta">
+          <span class="tag tcat">${i.cat}</span>
+          <span class="tag ${i.sevTag}">${i.sev}</span>
+        </div>
+        <div class="itext">${esc(i.text)}</div>
+        <button class="btn-rm" onclick="removeItem(${i.id})" aria-label="Remove">✕</button>
+      </div>
+    `).join('');
+  }
+
+  function removeItem(id) {
+    items = items.filter(i => i.id !== id);
+    renderItems();
+  }
+
+  function exportReport() {
+    if (!items.length) return;
+    const txt = items.map(i => `[${i.cat.toUpperCase()} — ${i.sev.toUpperCase()}]\n${i.text}`).join('\n\n');
+    navigator.clipboard.writeText(txt).then(() => showToast('Full report copied to clipboard!'));
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = '✓ ' + msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+</script>
+
+</body>
+</html>
